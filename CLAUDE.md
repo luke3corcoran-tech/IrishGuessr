@@ -32,7 +32,8 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 - Each entry: `{a, alt, h}` where `h` is 5 hints. Hint 1 should be hard: an obscure but true fact that only a real fan would know. Hints are written in the first person where it reads naturally ("I'm…", "We…"), and the last hint should make it gettable.
 - Check facts carefully. Avoid answers with many equally valid spellings unless they're listed in `alt`.
 - Puzzle number is days since 2026-11-26 (puzzle #1), using local midnight. It cycles through `BANK`.
-- Only 8 sample days exist. Add more before sharing widely.
+- 30 days exist (puzzles #1–30, 26 Nov – 25 Dec 2026). After that it cycles back to #1, so add more before then.
+- Each entry also has `p:[lat, lon, label]`, which pins the answer (or a person's home town or base) on the map when it's revealed. Leave `p` out if there's no sensible place.
 
 ## Mobile
 - The answer box isn't auto-focused on touch screens (`TOUCH`), so the keyboard only opens when the player taps it.
