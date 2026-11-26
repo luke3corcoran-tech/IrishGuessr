@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IrishGuessr</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: friendly pub-quiz host, one clue at a time
+   IDEA: hint cards dealt onto a table, vaguest first
+   COLOUR and TYPE: deep bottle green, cream cards, gold for points, coral for misses; one accent per genre; Rubik headings, Inter body
+   LAYOUT: one column, genre and points on top, hint stack, answer box pinned below */
+:root{color-scheme:light dark;--bg:light-dark(#11463a,#0a2c24);--bg2:light-dark(#0c3a30,#06201a);--ink:#f4f6f1;--mute:light-dark(#bcd3c9,#a0bdb2);--card:light-dark(rgba(255,255,255,.1),rgba(255,255,255,.06));--cream:#f7f0de;--creamInk:#1f2a24;--gold:#ffd166;--coral:#ff7a59;--ok:#9be36a;--music:#ff8fb8;--geo:#6fd0ff;--sport:#ffc24b}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(120% 80% at 50% 0%,var(--bg) 40%,var(--bg2));color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;min-height:100vh;overflow-x:clip}
+main{max-width:560px;margin:0 auto;padding:18px 16px 40px;display:flex;flex-direction:column;gap:18px;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1{font:800 28px/1.05 Rubik,sans-serif;margin:0;letter-spacing:-.01em}h1 span{color:var(--ok)}
+.day{color:var(--mute);font-size:14px}
+button{font:600 15px Inter,sans-serif;color:var(--ink);background:var(--card);border:1px solid rgba(255,255,255,.18);border-radius:12px;min-height:44px;padding:0 16px;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--ok);color:#183008;border-color:transparent;font-weight:700}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.dots{display:flex;gap:8px}.dots span{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:16px;background:rgba(255,255,255,.1);border:2px solid transparent}
+.dots span.on{border-color:var(--ink)}.dots span.ok{background:color-mix(in srgb,var(--ok) 35%,transparent)}.dots span.fail{background:color-mix(in srgb,var(--coral) 35%,transparent)}
+.worth{font:700 26px/1 Rubik,sans-serif;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}.worth small{font:500 13px Inter;color:var(--mute);margin-left:4px}
+.genre{display:inline-flex;align-items:center;gap:8px;font:700 14px Rubik,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--g)}
+.hints{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.hints li{border-radius:14px;padding:12px 16px;display:flex;gap:12px;align-items:baseline}
+.hints li.shown{background:var(--cream);color:var(--creamInk);box-shadow:0 3px 0 #d8caa6,0 6px 14px rgba(0,0,0,.25);border-left:6px solid var(--g)}
+.hints li.shown.new{animation:deal .35s ease-out both}
+.hints li.hidden{background:rgba(0,0,0,.14);border:1px dashed rgba(255,255,255,.2);color:var(--mute);font-size:14px;padding:9px 16px}
+.hints b{font:800 15px Rubik,sans-serif;color:var(--g);filter:brightness(.6);flex:none;width:18px}
+.hints p{margin:0;font:500 clamp(16px,4.4vw,18px)/1.35 Inter,sans-serif}
+.pattern{display:block;margin-top:6px;font:700 18px/1.2 ui-monospace,monospace;letter-spacing:.18em}
+@keyframes deal{from{opacity:0;transform:translateY(-10px) rotate(-1deg)}}
+form{display:flex;gap:8px}
+input{flex:1;font:500 17px Inter,sans-serif;padding:0 14px;min-height:48px;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.2);color:var(--ink)}
+input::placeholder{color:var(--mute)}
+input.shake{animation:shake .35s;border-color:var(--coral)}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.misses{display:flex;flex-wrap:wrap;gap:6px;min-height:0;margin:0;padding:0;list-style:none}
+.misses li{font-size:13px;padding:2px 10px;border-radius:99px;background:color-mix(in srgb,var(--coral) 25%,transparent);text-decoration:line-through;text-decoration-color:var(--coral)}
+.msg{color:var(--mute);font-size:14px;text-align:center;margin:0;min-height:22px}
+.controls{display:flex;gap:10px;flex-wrap:wrap}.controls button{flex:1 1 140px}
+.result{border-radius:18px;padding:16px 18px;text-align:center;background:var(--card)}
+.result .ans{font:800 clamp(24px,7vw,32px)/1.15 Rubik,sans-serif;margin:4px 0}
+.result.ok{background:color-mix(in srgb,var(--ok) 22%,transparent)}.result.fail{background:color-mix(in srgb,var(--coral) 22%,transparent)}
+.panel{background:var(--card);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.panel h2{font:700 24px/1.1 Rubik,sans-serif;margin:0}.panel p{margin:0}
+.rules{margin:0;padding-left:20px;color:var(--mute)}.rules li{margin:4px 0}.rules b{color:var(--ink)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chips span{font:700 13px Rubik;padding:4px 10px;border-radius:99px;background:rgba(0,0,0,.2);color:var(--g)}
+table{width:100%;border-collapse:collapse;font-size:15px}td{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.12);vertical-align:top}td:last-child{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.big{font:800 clamp(40px,12vw,56px)/1 Rubik,sans-serif;font-variant-numeric:tabular-nums;color:var(--gold)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;text-align:center}
+.stats div{background:rgba(0,0,0,.15);border-radius:12px;padding:10px 4px}.stats strong{display:block;font:700 22px Rubik}.stats span{font-size:13px;color:var(--mute)}
+pre{background:rgba(0,0,0,.25);border-radius:12px;padding:12px;margin:0;font:14px/1.5 ui-monospace,monospace;white-space:pre-wrap}
+.note{font-size:13px;color:var(--mute);text-align:center;margin-top:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){.hints li.shown.new,input.shake{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Irish<span>Guessr</span></h1>
+    <div class="day" id="dayLbl"></div>
+  </header>
+  <div id="app"></div>
+  <p class="note">Prototype · 8 sample days · one attempt per day</p>
+</main>
+<script>
+{
+// ---- Settings ----
+const POINTS=[100,80,60,40,20];           // points if solved on hint 1..5
+const GENRES=[
+  {key:'music',name:'Music',icon:'🎵',col:'var(--music)'},
+  {key:'geo',name:'Geography',icon:'🗺️',col:'var(--geo)'},
+  {key:'sport',name:'Sport',icon:'🏅',col:'var(--sport)'}
+];
+// ---- Puzzles: each day = [music, geography, sport]; each = {a: shown answer, alt: other accepted answers, h: 5 hints, vaguest first} ----
+const BANK=[
+ [
+  {a:"Thin Lizzy",alt:[],h:["Our name comes from a robot in a British comic, with the spelling changed.","Our first big hit was a rock version of a traditional song about robbing a captain.","We sang that the boys are back in town.","There's a bronze statue of our frontman just off Grafton Street.","A Dublin rock band fronted by Phil Lynott."]},
+  {a:"Carrauntoohil",alt:["Carrantuohill","Carrauntoohill","Carrantouhil","Corran Tuathail"],h:["I'm the top of the country, but I'm not in the north.","A tall metal cross stands on my summit.","I'm part of MacGillycuddy's Reeks.","I'm 1,038 m high, in County Kerry.","Ireland's highest mountain."]},
+  {a:"Katie Taylor",alt:["Taylor"],h:["I played football for the Republic of Ireland women's team before focusing on my main sport.","I carried Ireland's flag at the opening ceremony of London 2012.","In 2022, I fought in the first women's bout to headline Madison Square Garden.","I'm from Bray, County Wicklow.","Ireland's Olympic gold medal-winning boxer."]}
+ ],
+ [
+  {a:"The Cranberries",alt:[],h:["We started out in 1989 as The Cranberry Saw Us.","Our singer's yodel-like voice was our trademark.","Our 1994 protest song was written after the Warrington bombing.","A Limerick band fronted by Dolores O'Riordan.","Their hits include 'Linger', 'Dreams' and 'Zombie'."]},
+  {a:"River Shannon",alt:["Shannon","Sionainn","Abhainn na Sionainne"],h:["Legend says I'm named after a woman who drowned looking for wisdom.","I rise in a small pool in County Cavan called a 'pot'.","I flow through Lough Allen, Lough Ree and Lough Derg.","Athlone and Limerick stand on my banks.","Ireland's longest river."]},
+  {a:"Croke Park",alt:["Croker","Pairc an Chrocaigh"],h:["One of my terraces is said to be built on rubble from the 1916 Rising.","I'm named after an Archbishop of Cashel.","In 2007, I hosted rugby and soccer while Lansdowne Road was rebuilt.","I hold over 82,000 people and am the GAA's headquarters.","Dublin's home of the All-Ireland finals, on Jones's Road."]}
+ ],
+ [
+  {a:"Enya",alt:["Eithne Ni Bhraonain"],h:["My stage name is a spelling of my Irish first name.","I started out in my family's band before going solo.","I wrote 'May It Be' for The Lord of the Rings.","My 1988 single 'Orinoco Flow' was a UK number one.","A singer from Gweedore, Donegal, and one of Ireland's best-selling solo artists."]},
+  {a:"Skellig Michael",alt:["Skellig","Skelligs","Great Skellig","Sceilg Mhichil"],h:["Puffins nest on me every summer.","Monks lived in stone beehive huts on me for centuries.","I became a UNESCO World Heritage Site in 1996.","Luke Skywalker hid here in Star Wars.","A steep rocky island about 12 km off the Kerry coast."]},
+  {a:"Brian O'Driscoll",alt:["O'Driscoll","BOD"],h:["My nickname is just three letters.","In 2000, I scored a hat-trick against France in Paris.","I captained the British & Irish Lions in 2005.","I captained Ireland to the 2009 Grand Slam.","A Leinster centre, often called Ireland's greatest rugby player."]}
+ ],
+ [
+  {a:"The Pogues",alt:["Pogue Mahone"],h:["Our original name was a rude phrase in Irish.","We formed in London in 1982, mixing punk and Irish folk.","Our Christmas hit is a duet with Kirsty MacColl.","Our singer was Shane MacGowan.","They gave us 'Fairytale of New York'."]},
+  {a:"Lough Neagh",alt:["Loch nEathach"],h:["Legend says a giant scooped me out and threw the lump into the sea, making the Isle of Man.","I'm famous for my eels.","Five of Northern Ireland's six counties touch my shores.","I'm the biggest lake in Ireland and Britain.","A huge lake west of Belfast."]},
+  {a:"Sam Maguire",alt:["Sam Maguire Cup","Sam","The Sam"],h:["I'm named after a Cork man who played Gaelic football in London.","I was first presented in 1928; the original was retired in 1988.","My design is based on the Ardagh Chalice.","The winning captain lifts me in the Hogan Stand.","The trophy for the All-Ireland Senior Football Championship."]}
+ ],
+ [
+  {a:"Hozier",alt:["Andrew Hozier-Byrne"],h:["I left Trinity College Dublin in first year to record music.","My 2023 album was inspired by Dante's Inferno.","'Too Sweet' went to number one in the US in 2024.","I'm from Bray, County Wicklow.","His breakthrough was 'Take Me to Church'."]},
+  {a:"Achill Island",alt:["Achill","Acaill","Oilean Acla"],h:["I'm the largest island off Ireland's coast.","A bridge joins me to the mainland, so you don't need a boat.","Parts of The Banshees of Inisherin were filmed on me.","Keem Bay is one of my beaches.","An island in County Mayo."]},
+  {a:"Rory McIlroy",alt:["McIlroy"],h:["I grew up in Holywood, County Down.","I won my first major, the 2011 US Open, by eight shots.","I was part of Europe's winning Ryder Cup team at Bethpage in 2025.","In 2025, I won the Masters to complete golf's career Grand Slam.","A Northern Irish golfer and former world number one."]}
+ ],
+ [
+  {a:"The Dubliners",alt:[],h:["We started playing in O'Donoghue's pub in 1962.","We first called ourselves the Ronnie Drew Ballad Group.","Luke Kelly sang 'Raglan Road' with us.","We recorded 'The Irish Rover' with the Pogues in 1987.","A folk group named after James Joyce's short-story collection."]},
+  {a:"Giant's Causeway",alt:["Giants Causeway","Causeway"],h:["Legend says I was built so a giant could walk to Scotland.","I'm made of about 40,000 interlocking basalt columns.","Many of my columns have six sides.","I'm on the north coast of County Antrim.","Northern Ireland's only UNESCO World Heritage Site."]},
+  {a:"Sonia O'Sullivan",alt:["O'Sullivan"],h:["I ran for Villanova University in the US.","I won the 5,000 m world title in Gothenburg in 1995.","I won an Olympic silver medal at Sydney 2000.","There's a statue of me in my home town of Cobh, County Cork.","Ireland's greatest female distance runner."]}
+ ],
+ [
+  {a:"Sinéad O'Connor",alt:["O'Connor","Shuhada Sadaqat"],h:["In 2018, I took the name Shuhada' Sadaqat.","My first album was The Lion and the Cobra (1987).","In 1992, I tore up a photo of the Pope on live US TV.","My biggest hit was written by Prince.","She sang 'Nothing Compares 2 U'."]},
+  {a:"Croagh Patrick",alt:["The Reek","Reek","Cruach Phadraig"],h:["Thousands climb me on the last Sunday of July.","St Patrick is said to have fasted on my summit for 40 days.","Locals call me 'the Reek'.","I look down on Clew Bay and Westport.","Ireland's holy mountain, in County Mayo."]},
+  {a:"Roy Keane",alt:["Keane"],h:["I started out at Cobh Ramblers.","Brian Clough signed me for Nottingham Forest.","I captained Manchester United.","I left the 2002 World Cup squad after a row in Saipan.","A Cork-born midfielder who's now a TV pundit."]}
+ ],
+ [
+  {a:"U2",alt:["U 2","You Too"],h:["We formed at Mount Temple school in Dublin in 1976.","Before our final name, we were called Feedback, then The Hype.","In 2023, we opened the Sphere in Las Vegas.","The Joshua Tree came out in 1987.","Bono, the Edge, Adam Clayton and Larry Mullen Jr."]},
+  {a:"Cliffs of Moher",alt:["Moher","Aillte an Mhothair"],h:["I'm named after a ruined fort that once stood on me.","O'Brien's Tower stands on top of me.","I appeared in Harry Potter and the Half-Blood Prince.","I stretch about 14 km along the edge of the Burren.","Sea cliffs in County Clare."]},
+  {a:"Padraig Harrington",alt:["Harrington"],h:["I qualified as an accountant before turning professional.","In 2007, I won a play-off at Carnoustie.","In 2008, I won The Open and the PGA Championship back to back.","I captained Europe at the 2021 Ryder Cup.","A Dublin golfer with three major titles."]}
+ ]
+];
+
+// ---- Helpers ----
+const EPOCH=Date.UTC(2026,10,26);  // puzzle #1
+const now=new Date();
+const todayNum=Math.floor((Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())-EPOCH)/864e5)+1;
+const app=document.getElementById('app'),dayLbl=document.getElementById('dayLbl');
+const KEY='irishguessr';
+const store={get(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return{}}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/&/g,'and').trim().replace(/^the\s+/,'').replace(/[^a-z0-9]/g,'');
+function lev(a,b){const m=a.length,n=b.length;let p=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function matches(guess,q){
+  const g=norm(guess);if(!g)return false;
+  return [q.a,...q.alt].some(x=>{const t=norm(x);if(g===t)return true;const tol=t.length>=8?2:t.length>=5?1:0;return tol>0&&lev(g,t)<=tol});
+}
+const pattern=a=>a.split(' ').map(w=>[...w].map((c,i)=>i===0||!/\p{L}/u.test(c)?c:'_').join('')).join('   ');
+const pts=w=>w.status==='ok'?POINTS[w.hints-1]:0;
+
+// ---- State ----
+let S=null,tick=null;
+function save(){const st=store.get();st.days=st.days||{};st.days[S.day]={phase:S.phase,idx:S.idx,words:S.words.map(({hints,misses,status})=>({hints,misses,status}))};store.set(st)}
+function load(n){
+  S={day:n,idx:0,phase:'intro',words:BANK[(n-1)%BANK.length].map(q=>({q,hints:1,misses:[],status:'todo'})),fresh:-1,msg:''};
+  const saved=store.get().days?.[n];
+  if(saved){S.phase=saved.phase;S.idx=saved.idx;saved.words.forEach((w,i)=>Object.assign(S.words[i],w))}
+  dayLbl.textContent='Puzzle #'+n;render();
+}
+const cur=()=>S.words[S.idx];
+
+// ---- Rendering ----
+function render(){
+  if(tick){clearInterval(tick);tick=null}
+  if(S.phase==='intro')return renderIntro();
+  if(S.phase==='done')return renderDone();
+  const w=cur(),g=GENRES[S.idx],ended=w.status!=='todo',showN=ended?5:w.hints;
+  app.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px;--g:${g.col}">
+   <div class="bar"><div class="dots" aria-label="Progress">${S.words.map((x,i)=>`<span class="${x.status==='ok'?'ok':x.status==='fail'?'fail':i===S.idx?'on':''}" title="${GENRES[i].name}">${GENRES[i].icon}</span>`).join('')}</div>
+    <div class="worth">${ended?pts(w):POINTS[w.hints-1]}<small>${ended?'points':'pts if right now'}</small></div></div>
+   <div class="genre">${g.icon} ${g.name} · ${S.idx+1} of 3</div>
+   <ol class="hints" aria-live="polite">${w.q.h.map((t,i)=>i<showN?
+      `<li class="shown ${i===S.fresh?'new':''}"><b>${i+1}</b><p>${esc(t)}${i===4?`<span class="pattern" aria-label="Letter pattern">${esc(pattern(w.q.a))}</span>`:''}</p></li>`:
+      `<li class="hidden"><b>${i+1}</b>Hint ${i+1} · worth ${POINTS[i]} pts</li>`).join('')}</ol>
+   ${ended?`<div class="result ${w.status}"><div style="color:var(--mute);font-size:14px">${w.status==='ok'?'Got it on hint '+w.hints:'The answer was'}</div><div class="ans">${esc(w.q.a)}</div><div><b style="color:var(--gold)">+${pts(w)}</b> points</div></div>
+     <div class="controls"><button class="primary" id="go">${S.idx<2?'Next: '+GENRES[S.idx+1].icon+' '+GENRES[S.idx+1].name:'See results'}</button></div>`:
+    `<form id="f" autocomplete="off"><label class="sr" for="g">Your answer</label><input id="g" placeholder="Type your answer" enterkeyhint="go" autocapitalize="words"><button class="primary" type="submit">Guess</button></form>
+     ${w.misses.length?`<ul class="misses" aria-label="Wrong guesses">${w.misses.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
+     <p class="msg" role="status">${esc(S.msg)||'A wrong guess reveals the next hint.'}</p>
+     <div class="controls"><button id="hint">${w.hints<5?`Next hint <span style="color:var(--coral)">−20</span>`:'Give up <span style="color:var(--coral)">0 pts</span>'}</button></div>`}
+  </div>`;
+  S.fresh=-1;
+  const f=document.getElementById('f');
+  if(f){const inp=document.getElementById('g');f.onsubmit=e=>{e.preventDefault();guess(inp.value)};document.getElementById('hint').onclick=()=>nextHint('');inp.focus();if(S.shake){inp.classList.add('shake');S.shake=false}}
+  const go=document.getElementById('go');if(go){go.onclick=next;go.focus()}
+}
+function guess(v){
+  const w=cur();if(!v.trim())return;
+  if(matches(v,w.q)){w.status='ok';S.msg='';save();return render()}
+  if(w.misses.some(m=>norm(m)===norm(v))){S.msg='You already tried that.';return render()}
+  w.misses.push(v.trim());S.shake=true;nextHint('Not quite. ');
+}
+function nextHint(prefix){
+  const w=cur();
+  if(w.hints>=5){w.status='fail';S.msg='';save();return render()}
+  w.hints++;S.fresh=w.hints-1;S.msg=prefix+'Hint '+w.hints+' unlocked.';save();render();
+}
+function next(){if(S.idx<2){S.idx++;S.msg=''}else S.phase='done';save();render()}
+function renderIntro(){
+  app.innerHTML=`<div class="panel"><h2>Three Irish answers. Five hints each.</h2>
+   <div class="chips">${GENRES.map(g=>`<span style="--g:${g.col}">${g.icon} ${g.name}</span>`).join('')}</div>
+   <ul class="rules"><li>Every day there's one answer from <b>music</b>, <b>geography</b> and <b>sport</b>. Everyone gets the same three.</li>
+   <li>You start with one vague hint. Get it right straight away for <b>100 points</b>.</li>
+   <li>Each extra hint drops it by 20: <b>${POINTS.join(' → ')}</b>. A wrong guess reveals the next hint.</li>
+   <li>Spelling doesn't have to be perfect, and fadas are optional. <b>Best of 300.</b></li></ul>
+   <button class="primary" id="start">Start puzzle #${S.day}</button></div>`;
+  const b=document.getElementById('start');b.onclick=()=>{S.phase='play';save();render()};b.focus();
+}
+function streak(res){let s=0,d=todayNum;if(!res[d])d--;while(d>0&&res[d]){s++;d--}return s}
+function renderDone(){
+  const total=S.words.reduce((a,w)=>a+pts(w),0);
+  const days=store.get().days||{};const res={};for(const k in days)if(days[k].phase==='done')res[k]=days[k];
+  const all=Object.values(res).map(d=>d.words.reduce((a,w)=>a+pts(w),0));
+  const row=w=>w.status==='ok'?'🟨'.repeat(w.hints-1)+'🟩'+'⬜'.repeat(5-w.hints):'🟥'.repeat(5);
+  const share=`IrishGuessr #${S.day} · ${total}/300\n`+S.words.map((w,i)=>`${GENRES[i].icon} ${row(w)}`).join('\n');
+  app.innerHTML=`<div class="panel"><p style="color:var(--mute)">Puzzle #${S.day} score</p><div class="big">${total} <span style="font-size:.4em;color:var(--mute)">/ 300</span></div>
+   <table>${S.words.map((w,i)=>`<tr><td>${GENRES[i].icon} <b>${esc(w.q.a)}</b><br><span style="color:var(--mute);font-size:13px">${w.status==='ok'?'hint '+w.hints:'missed'}${w.misses.length?' · '+w.misses.length+' wrong':''}</span></td><td><b>${pts(w)}</b></td></tr>`).join('')}</table>
+   <div class="stats"><div><strong>${all.length}</strong><span>Played</span></div><div><strong>${streak(res)}</strong><span>Streak</span></div><div><strong>${all.length?Math.max(...all):'–'}</strong><span>Best score</span></div></div>
+   <pre>${esc(share)}</pre>
+   <div class="controls"><button class="primary" id="copy">Copy result</button></div>
+   <p style="text-align:center;color:var(--mute)">Next puzzle in <b id="cd" style="color:var(--ink);font-variant-numeric:tabular-nums"></b></p></div>`;
+  document.getElementById('copy').onclick=async e=>{try{await navigator.clipboard.writeText(share);e.target.textContent='Copied'}catch(_){e.target.textContent='Select the text above to copy'}};
+  const cd=document.getElementById('cd');const upd=()=>{const t=new Date(),m=new Date(t.getFullYear(),t.getMonth(),t.getDate()+1),d=Math.max(0,Math.floor((m-t)/1000));cd.textContent=String(Math.floor(d/3600)).padStart(2,'0')+':'+String(Math.floor(d/60)%60).padStart(2,'0')+':'+String(d%60).padStart(2,'0');if(!d)location.reload()};upd();tick=setInterval(upd,1000);
+}
+load(Math.max(1,todayNum));
+}
+</script>
+</body>
+</html>
