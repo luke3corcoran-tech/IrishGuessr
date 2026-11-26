@@ -1,6 +1,6 @@
-# Amble
+# IrishGuessr
 
-Daily Irish trivia guessing game, called Amble (formerly IrishGuessr; the repo is still named IrishGuessr). Single static page (`index.html`) hosted on GitHub Pages from `main` / root. No build step, no backend.
+Daily Irish trivia guessing game. Single static page (`index.html`) hosted on GitHub Pages from `main` / root. No build step, no backend.
 
 ## Game rules (decided)
 - Everyone gets the same 3 answers per day, one from each genre, always in this order: Music, Geography, Sport.
@@ -42,7 +42,7 @@ Daily Irish trivia guessing game, called Amble (formerly IrishGuessr; the repo i
 - The guess box sits directly under the hints; "Reveal hint" is below it.
 
 ## State
-- Kept in `localStorage` (key `irishguessr`, kept from the old name so streaks survive the rename) on each player's device: per-day progress, results, streak, best score.
+- Kept in `localStorage` (key `irishguessr`) on each player's device: per-day progress, results, streak, best score.
 - No shared leaderboard.
 
 ## Known limits
