@@ -7,7 +7,8 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 - Every answer is something Irish.
 - Each answer has 5 hints, from vaguest to most obvious. Hint 1 is shown at the start.
 - Hint 5 also shows a letter pattern (first letter of each word, the rest as underscores).
-- Unlimited guesses. Wrong guesses are free and don't reveal anything (they're listed, crossed out).
+- Unlimited guesses. Wrong guesses are free and don't reveal anything.
+- Every guess is listed as a coloured chip: red = wrong, amber = close (shares a real word with an answer, or is within a couple of typos of matching), green = correct (`closeness()`).
 - Players tap "Next hint" only when they want one. On hint 5 that button becomes "Give up", which ends the answer with 0 points.
 - One attempt per day. Progress is saved after every step, so refreshing doesn't reset a puzzle.
 
@@ -28,6 +29,12 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 - Check facts carefully. Avoid answers with many equally valid spellings unless they're listed in `alt`.
 - Puzzle number is days since 2026-11-26 (puzzle #1), using local midnight. It cycles through `BANK`.
 - Only 8 sample days exist. Add more before sharing widely.
+
+## Mobile
+- The answer box isn't auto-focused on touch screens (`TOUCH`), so the keyboard only opens when the player taps it.
+- Wrong guesses update the page in place (no re-render), so the keyboard stays open between guesses.
+- When the box is focused on a phone, the newest hint scrolls to the top so it stays visible above the keyboard.
+- The guess box sits directly under the hints; "Reveal hint" is below it.
 
 ## State
 - Kept in `localStorage` (key `irishguessr`) on each player's device: per-day progress, results, streak, best score.

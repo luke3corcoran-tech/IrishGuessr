@@ -12,12 +12,12 @@
    IDEA: hint cards dealt onto a table, vaguest first, against rolling green hills
    COLOUR and TYPE: deep bottle green, cream cards, gold for points, coral for misses; one accent per genre; Rubik headings, Inter body
    LAYOUT: one column: progress stepper, game card (genre + points meter, hint stack, guess box) */
-:root{color-scheme:dark;--bg1:#12503f;--bg2:#0a3027;--bg3:#061d17;--ink:#f4f6f1;--mute:#a9c6ba;--panel:rgba(255,255,255,.07);--line:rgba(255,255,255,.13);--cream:#f8f2e2;--creamInk:#1f2a24;--gold:#ffd166;--coral:#ff7a59;--ok:#9be36a;--music:#ff8fb8;--geo:#6fd0ff;--sport:#ffc24b}
+:root{color-scheme:dark;--bg1:#12503f;--bg2:#0a3027;--bg3:#061d17;--ink:#f4f6f1;--mute:#a9c6ba;--panel:rgba(255,255,255,.07);--line:rgba(255,255,255,.13);--cream:#f8f2e2;--creamInk:#1f2a24;--gold:#ffd166;--coral:#ff7a59;--amber:#ffb347;--ok:#9be36a;--music:#ff8fb8;--geo:#6fd0ff;--sport:#ffc24b}
 *{box-sizing:border-box;min-width:0}
 html{background:var(--bg3)}
-body{margin:0;color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;min-height:100vh;overflow-x:clip;background:radial-gradient(90% 60% at 50% -10%,#1d6b55 0%,transparent 70%),linear-gradient(180deg,var(--bg1),var(--bg2) 55%,var(--bg3));background-attachment:fixed}
+body{margin:0;color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif;min-height:100vh;min-height:100dvh;overflow-x:clip;background:radial-gradient(90% 60% at 50% -10%,#1d6b55 0%,transparent 70%),linear-gradient(180deg,var(--bg1),var(--bg2) 55%,var(--bg3));background-attachment:fixed}
 body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:min(34vh,260px);z-index:-1;pointer-events:none;opacity:.55;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 260' preserveAspectRatio='none'%3E%3Cpath d='M0 120 C200 40 350 160 560 90 S900 30 1200 110 V260 H0Z' fill='%23145a46'/%3E%3Cpath d='M0 170 C180 110 380 210 620 150 S960 110 1200 170 V260 H0Z' fill='%230e4536'/%3E%3Cpath d='M0 215 C220 175 460 250 700 205 S1020 190 1200 220 V260 H0Z' fill='%23092f25'/%3E%3C/svg%3E") bottom/100% 100% no-repeat}
-main{max-width:560px;margin:0 auto;padding:18px 16px 48px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
+main{max-width:560px;margin:0 auto;padding:18px 16px 48px;display:flex;flex-direction:column;gap:16px;min-height:100vh;min-height:100dvh}
 header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .brand{display:flex;align-items:center;gap:10px}
 .mark{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(145deg,var(--ok),#4fae3a);color:#123008;font:800 22px/1 Rubik,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,.3),inset 0 -3px 0 rgba(0,0,0,.15);transform:rotate(-6deg)}
@@ -67,7 +67,17 @@ button.link{background:none;border:0;color:var(--mute);min-height:36px;text-deco
 .guess.shake{animation:shake .35s;border-color:var(--coral)}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .misses{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
-.misses li{font-size:13px;padding:3px 10px;border-radius:99px;background:color-mix(in srgb,var(--coral) 22%,transparent);color:#ffd6cb;text-decoration:line-through;text-decoration-color:var(--coral)}
+.misses:empty{display:none}
+.misses li{font:600 13px Inter;padding:4px 10px 4px 8px;border-radius:99px;display:inline-flex;align-items:center;gap:6px;border:1px solid transparent}
+.misses li::before{font-size:11px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;color:#10241c;font-weight:800}
+.misses li.miss{background:color-mix(in srgb,var(--coral) 20%,transparent);border-color:color-mix(in srgb,var(--coral) 45%,transparent);color:#ffd6cb}
+.misses li.miss::before{content:"✕";background:var(--coral)}
+.misses li.close{background:color-mix(in srgb,var(--amber) 22%,transparent);border-color:color-mix(in srgb,var(--amber) 55%,transparent);color:#ffe7b8}
+.misses li.close::before{content:"≈";background:var(--amber)}
+.misses li.ok{background:color-mix(in srgb,var(--ok) 25%,transparent);border-color:color-mix(in srgb,var(--ok) 60%,transparent);color:#e3ffd0}
+.misses li.ok::before{content:"✓";background:var(--ok)}
+.misses li.pop{animation:pop .35s cubic-bezier(.2,.9,.3,1.4) both}
+.legend{display:flex;gap:12px;justify-content:center;font-size:12px;color:var(--mute);margin:-6px 0 0}.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;background:var(--c)}
 .msg{color:var(--mute);font-size:14px;text-align:center;margin:0;min-height:22px}
 .result{border-radius:18px;padding:18px;text-align:center;position:relative;overflow:hidden}
 .result small{display:block;color:var(--mute);font-size:14px}
@@ -215,12 +225,19 @@ function matches(guess,q){
   const gs=keys(guess);if(!gs.length)return false;
   return [q.a,...q.alt].some((x,i)=>keys(x).some(t=>gs.some(g=>g===t||(i===0&&t.length>=5&&g.includes(t)&&g.length<=t.length+12)||lev(g,t)<=tolFor(t.length))));
 }
+// How close a wrong guess was: 'close' if nearly spelled right or it shares a real word with an answer
+function closeness(guess,q){
+  if(matches(guess,q))return 'ok';
+  const gs=keys(guess),words=x=>String(x).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/['’`]/g,'').replace(/[^a-z0-9]+/g,' ').replace(FILLER,' ').replace(PLACE,' ').split(' ').filter(w=>w.length>=3);
+  const gw=new Set(words(guess));
+  return [q.a,...q.alt].some(x=>words(x).some(w=>gw.has(w))||keys(x).some(t=>gs.some(g=>lev(g,t)<=tolFor(t.length)+2)))?'close':'miss';
+}
 const pattern=a=>a.split(' ').map(w=>[...w].map((c,i)=>i===0||!/\p{L}/u.test(c)?c:'_').join('')).join('   ');
 const pts=w=>w.status==='ok'?POINTS[w.hints-1]:0;
 
 // ---- State ----
 let S=null,tick=null;
-function save(){const st=store.get();st.days=st.days||{};st.days[S.day]={phase:S.phase,idx:S.idx,words:S.words.map(({hints,misses,status})=>({hints,misses,status}))};store.set(st)}
+function save(){const st=store.get();st.days=st.days||{};st.days[S.day]={phase:S.phase,idx:S.idx,words:S.words.map(({hints,misses,status,hit})=>({hints,misses,status,hit}))};store.set(st)}
 function load(n){
   S={day:n,idx:0,phase:'intro',words:BANK[(n-1)%BANK.length].map(q=>({q,hints:1,misses:[],status:'todo'})),fresh:-1,msg:''};
   const saved=store.get().days?.[n];
@@ -228,6 +245,7 @@ function load(n){
   dayLbl.textContent='Puzzle #'+n;document.getElementById('dateLbl').textContent=new Date().toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'});render();
 }
 const cur=()=>S.words[S.idx];
+const TOUCH=matchMedia('(pointer:coarse)').matches;
 
 // ---- Rendering ----
 const steps=()=>`<div class="steps" aria-label="Progress">${S.words.map((x,i)=>{const G=GENRES[i];const cls=x.status==='ok'?'ok':x.status==='fail'?'fail':i===S.idx?'on':'';return `<div class="step ${cls}" style="--sg:${G.col}"><span>${G.icon}</span><span class="nm">${G.name}</span><span class="st">${x.status==='ok'?pts(x):x.status==='fail'?'✕':''}</span></div>`}).join('')}</div>`;
@@ -242,28 +260,42 @@ function render(){
   <section class="card" style="--g:${g.col}">
    <div class="top"><div class="genre"><i>${g.icon}</i>${g.name}</div>
     <div class="worth"><b>${val}<small>pts</small></b><div class="meter" aria-hidden="true">${POINTS.map((_,i)=>`<span class="${!ended&&i>=w.hints-1||ended&&w.status==='ok'&&i>=w.hints-1?'on':''}"></span>`).join('')}</div></div></div>
-   <ol class="hints" aria-live="polite">${w.q.h.slice(0,showN).map(hintLi).join('')}
-    ${!ended&&w.hints<5?`<li><button class="unlock" id="hint"><span class="lk">🔒</span>Reveal hint ${w.hints+1}<span class="cost">−20 pts</span></button></li>`:''}</ol>
-   ${!ended&&w.hints<4?`<p class="locked">${w.hints===3?'Hint 5 is':`Hints ${w.hints+2}–5 are`} locked after that</p>`:''}
-   ${ended?`<div class="result reveal ${w.status}">${w.status==='ok'?confetti():''}<div><small>${w.status==='ok'?'✓ Got it on hint '+w.hints:'The answer was'}</small><div class="ans">${esc(w.q.a)}</div><div class="gain">+${pts(w)} pts</div>${w.q.p?`<div class="where">📍 ${esc(w.q.p[2])}</div>`:''}</div>${w.q.p?mapSvg([[w.q.p[0],w.q.p[1],g.col]],'Map showing '+w.q.p[2]):''}</div>
+   <ol class="hints" aria-live="polite">${w.q.h.slice(0,showN).map(hintLi).join('')}</ol>
+   ${ended?`${w.misses.length||w.hit?`<ul class="misses" aria-label="Your guesses">${guessChips(w)}</ul>`:''}
+     <div class="result reveal ${w.status}">${w.status==='ok'?confetti():''}<div><small>${w.status==='ok'?'✓ Got it on hint '+w.hints:'The answer was'}</small><div class="ans">${esc(w.q.a)}</div><div class="gain">+${pts(w)} pts</div>${w.q.p?`<div class="where">📍 ${esc(w.q.p[2])}</div>`:''}</div>${w.q.p?mapSvg([[w.q.p[0],w.q.p[1],g.col]],'Map showing '+w.q.p[2]):''}</div>
      <button class="primary" id="go">${S.idx<2?'Next: '+GENRES[S.idx+1].icon+' '+GENRES[S.idx+1].name+' →':'See my score →'}</button>`:
-    `<form class="guess" id="f" autocomplete="off"><label class="sr" for="g">Your answer</label><input id="g" placeholder="Type your answer…" enterkeyhint="go" autocapitalize="words"><button class="primary" type="submit">Guess</button></form>
-     ${w.misses.length?`<ul class="misses" aria-label="Wrong guesses">${w.misses.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
-     <p class="msg" role="status">${esc(S.msg)||'Guesses are free. Only hints cost points.'}</p>
-     ${w.hints===5?`<button class="link" id="give">Give up (0 pts)</button>`:''}`}
+    `<form class="guess" id="f" autocomplete="off"><label class="sr" for="g">Your answer</label><input id="g" placeholder="Type your answer…" enterkeyhint="go" autocapitalize="words" autocomplete="off" autocorrect="off" spellcheck="false"><button class="primary" type="submit">Guess</button></form>
+     <ul class="misses" id="misses" aria-label="Your guesses">${guessChips(w)}</ul>
+     <p class="msg" id="msg" role="status">${esc(S.msg)||'Guesses are free. Only hints cost points.'}</p>
+     ${w.hints<5?`<button class="unlock" id="hint"><span class="lk">🔒</span>Reveal hint ${w.hints+1}<span class="cost">−20 pts</span></button>
+       ${w.hints<4?`<p class="locked">${w.hints===3?'Hint 5 is':`Hints ${w.hints+2}–5 are`} locked after that</p>`:''}`:
+      `<button class="link" id="give">Give up (0 pts)</button>`}
+     ${w.misses.length?`<p class="legend"><span style="--c:var(--coral)">Wrong</span><span style="--c:var(--amber)">Close</span><span style="--c:var(--ok)">Right</span></p>`:''}`}
   </section>`;
   S.fresh=-1;
   const f=document.getElementById('f');
-  if(f){const inp=document.getElementById('g');f.onsubmit=e=>{e.preventDefault();guess(inp.value)};inp.focus();if(S.shake){f.classList.add('shake');S.shake=false}}
+  if(f){const inp=document.getElementById('g');f.onsubmit=e=>{e.preventDefault();guess(inp)};
+    // On phones, don't pop the keyboard up by itself; when it opens, keep the newest hint and the box in view
+    if(!TOUCH)inp.focus();
+    inp.addEventListener('focus',()=>{if(TOUCH)setTimeout(()=>{const l=app.querySelector('.hint.latest');(l||f).scrollIntoView({block:'start',behavior:'smooth'})},300)})}
   const h=document.getElementById('hint');if(h)h.onclick=()=>nextHint('');
   const gv=document.getElementById('give');if(gv)gv.onclick=()=>nextHint('');
-  const go=document.getElementById('go');if(go){go.onclick=next;go.focus()}
+  const go=document.getElementById('go');if(go){go.onclick=next;if(TOUCH){const r=app.querySelector('.result');r&&r.scrollIntoView({block:'center',behavior:'smooth'})}else go.focus()}
 }
-function guess(v){
-  const w=cur();if(!v.trim())return;
-  if(matches(v,w.q)){w.status='ok';S.msg='';save();return render()}
-  if(w.misses.some(m=>norm(m)===norm(v))){S.msg='You already tried that.';return render()}
-  w.misses.push(v.trim());S.shake=true;S.msg='Not quite. Keep guessing, or reveal a hint.';save();render();
+function guessChips(w){return [...w.misses.map(m=>[m,closeness(m,w.q)]),...(w.hit?[[w.hit,'ok']]:[])].map(([m,c],i,a)=>`<li class="${c} ${i===a.length-1&&S.popLast?'pop':''}">${esc(m)}</li>`).join('')}
+function guess(inp){
+  const w=cur(),v=inp.value.trim();if(!v)return;
+  if(matches(v,w.q)){w.status='ok';w.hit=v;S.msg='';save();inp.blur();return render()}
+  const msg=document.getElementById('msg'),f=document.getElementById('f');
+  if(w.misses.some(m=>norm(m)===norm(v))){msg.textContent='You already tried that.';inp.select();return}
+  w.misses.push(v);save();
+  const c=closeness(v,w.q);
+  S.msg=c==='close'?'So close! Check the spelling, or part of it is right.':'Not quite. Keep guessing, or reveal a hint.';
+  // Update in place (no re-render) so the phone keyboard stays open
+  S.popLast=true;document.getElementById('misses').innerHTML=guessChips(w);S.popLast=false;
+  msg.textContent=S.msg;inp.value='';
+  f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');
+  if(!app.querySelector('.legend'))f.parentNode.insertAdjacentHTML('beforeend','<p class="legend"><span style="--c:var(--coral)">Wrong</span><span style="--c:var(--amber)">Close</span><span style="--c:var(--ok)">Right</span></p>');
 }
 function nextHint(prefix){
   const w=cur();
