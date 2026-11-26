@@ -7,8 +7,8 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 - Every answer is something Irish.
 - Each answer has 5 hints, from vaguest to most obvious. Hint 1 is shown at the start.
 - Hint 5 also shows a letter pattern (first letter of each word, the rest as underscores).
-- Players type a guess. A wrong guess reveals the next hint. "Next hint" does the same without guessing.
-- A wrong guess on hint 5 (or "Give up") ends that answer with 0 points.
+- Unlimited guesses. Wrong guesses are free and don't reveal anything (they're listed, crossed out).
+- Players tap "Next hint" only when they want one. On hint 5 that button becomes "Give up", which ends the answer with 0 points.
 - One attempt per day. Progress is saved after every step, so refreshing doesn't reset a puzzle.
 
 ## Scoring

@@ -171,7 +171,7 @@ function render(){
      <div class="controls"><button class="primary" id="go">${S.idx<2?'Next: '+GENRES[S.idx+1].icon+' '+GENRES[S.idx+1].name:'See results'}</button></div>`:
     `<form id="f" autocomplete="off"><label class="sr" for="g">Your answer</label><input id="g" placeholder="Type your answer" enterkeyhint="go" autocapitalize="words"><button class="primary" type="submit">Guess</button></form>
      ${w.misses.length?`<ul class="misses" aria-label="Wrong guesses">${w.misses.map(m=>`<li>${esc(m)}</li>`).join('')}</ul>`:''}
-     <p class="msg" role="status">${esc(S.msg)||'A wrong guess reveals the next hint.'}</p>
+     <p class="msg" role="status">${esc(S.msg)||'Guesses are free. Only hints cost points.'}</p>
      <div class="controls"><button id="hint">${w.hints<5?`Next hint <span style="color:var(--coral)">−20</span>`:'Give up <span style="color:var(--coral)">0 pts</span>'}</button></div>`}
   </div>`;
   S.fresh=-1;
@@ -183,7 +183,7 @@ function guess(v){
   const w=cur();if(!v.trim())return;
   if(matches(v,w.q)){w.status='ok';S.msg='';save();return render()}
   if(w.misses.some(m=>norm(m)===norm(v))){S.msg='You already tried that.';return render()}
-  w.misses.push(v.trim());S.shake=true;nextHint('Not quite. ');
+  w.misses.push(v.trim());S.shake=true;S.msg='Not quite. Keep guessing, or take a hint.';save();render();
 }
 function nextHint(prefix){
   const w=cur();
@@ -196,7 +196,7 @@ function renderIntro(){
    <div class="chips">${GENRES.map(g=>`<span style="--g:${g.col}">${g.icon} ${g.name}</span>`).join('')}</div>
    <ul class="rules"><li>Every day there's one answer from <b>music</b>, <b>geography</b> and <b>sport</b>. Everyone gets the same three.</li>
    <li>You start with one vague hint. Get it right straight away for <b>100 points</b>.</li>
-   <li>Each extra hint drops it by 20: <b>${POINTS.join(' → ')}</b>. A wrong guess reveals the next hint.</li>
+   <li>Each extra hint drops it by 20: <b>${POINTS.join(' → ')}</b>. Guess as often as you like. <b>Wrong guesses are free.</b></li>
    <li>Spelling doesn't have to be perfect, and fadas are optional. <b>Best of 300.</b></li></ul>
    <button class="primary" id="start">Start puzzle #${S.day}</button></div>`;
   const b=document.getElementById('start');b.onclick=()=>{S.phase='play';save();render()};b.focus();
