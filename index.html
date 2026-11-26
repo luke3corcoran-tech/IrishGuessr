@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>IrishGuessr</title>
+<title>Amble</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -137,7 +137,7 @@ pre{background:rgba(0,0,0,.25);border-radius:14px;padding:12px 14px;margin:0;fon
 <body>
 <main>
   <header>
-    <div class="brand"><span class="mark" aria-hidden="true">?</span><h1>Irish<span>Guessr</span></h1></div>
+    <div class="brand"><span class="mark" aria-hidden="true">?</span><h1>Amble<span>.</span></h1></div>
     <div class="day"><b id="dayLbl"></b><span id="dateLbl"></span></div>
   </header>
   <div id="app" style="display:flex;flex-direction:column;gap:14px"></div>
@@ -318,7 +318,7 @@ const EPOCH=Date.UTC(2026,10,26);  // puzzle #1
 const now=new Date();
 const todayNum=Math.floor((Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())-EPOCH)/864e5)+1;
 const app=document.getElementById('app'),dayLbl=document.getElementById('dayLbl');
-const KEY='irishguessr';
+const KEY='irishguessr';  // storage key kept from the old name so players keep their streaks
 const store={get(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return{}}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/&/g,'and').trim().replace(/^the\s+/,'').replace(/[^a-z0-9]/g,'');
@@ -436,7 +436,7 @@ function renderDone(){
   const days=store.get().days||{};const res={};for(const k in days)if(days[k].phase==='done')res[k]=days[k];
   const all=Object.values(res).map(d=>d.words.reduce((a,w)=>a+pts(w),0));
   const row=w=>(w.status==='ok'?'🟨'.repeat(w.hints-1)+'🟩'+'⬜'.repeat(5-w.hints):'🟥'.repeat(5))+(w.misses.length?' ✕'+w.misses.length:'');
-  const share=`IrishGuessr #${S.day} · ${total}/300\n`+S.words.map((w,i)=>`${GENRES[i].icon} ${row(w)}`).join('\n');
+  const share=`Amble #${S.day} · ${total}/300\n`+S.words.map((w,i)=>`${GENRES[i].icon} ${row(w)}`).join('\n');
   const verdict=total>=260?'Sláinte! Outstanding.':total>=200?'Maith thú! Great round.':total>=120?'Not bad at all.':'Tomorrow\'s another day.';
   app.innerHTML=`<section class="panel">
    <p style="color:var(--mute);text-align:center">Puzzle #${S.day} · ${esc(verdict)}</p>
