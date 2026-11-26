@@ -29,7 +29,7 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 
 ## Puzzles
 - `BANK` in `index.html`: an array of days, each holding `[music, geography, sport]`.
-- Each entry: `{a, alt, h}` where `h` is 5 hints. Hints are written in the first person where it reads naturally ("I'm…", "We…"), and the last hint should make it gettable.
+- Each entry: `{a, alt, h}` where `h` is 5 hints. Hint 1 should be hard: an obscure but true fact that only a real fan would know. Hints are written in the first person where it reads naturally ("I'm…", "We…"), and the last hint should make it gettable.
 - Check facts carefully. Avoid answers with many equally valid spellings unless they're listed in `alt`.
 - Puzzle number is days since 2026-11-26 (puzzle #1), using local midnight. It cycles through `BANK`.
 - Only 8 sample days exist. Add more before sharing widely.
