@@ -14,9 +14,12 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 ## Scoring
 - `POINTS=[100,80,60,40,20]`: points for solving on hint 1–5. 300 max per day.
 
-## Answer matching
-- Case, fadas, punctuation, spaces and a leading "The" are ignored.
-- Typos allowed: 1 edit for answers of 5–7 letters, 2 edits for 8+ letters, none under 5.
+## Answer matching (deliberately forgiving)
+- Ignores case, fadas, punctuation, apostrophes, spacing and word order.
+- Ignores filler words (the, a, an, and, of, co, county, st, saint) and treats place words as optional (river, lough, lake, island, mountain, mount, cliffs, bay, head…).
+- Doubled letters count as single ("Carantoohil" = "Carrauntoohil").
+- Typos allowed by answer length: 0 for ≤3 letters, 1 for 4–6, 2 for 7–10, 3 for 11+. Swapped neighbouring letters count as one typo.
+- A guess that contains the full main answer (e.g. "the band thin lizzy") also counts. This doesn't apply to `alt` answers, so "Robbie Keane" doesn't match the surname alt "Keane".
 - Each puzzle has `a` (shown answer) and `alt` (other accepted answers: surnames, nicknames, Irish names).
 
 ## Puzzles

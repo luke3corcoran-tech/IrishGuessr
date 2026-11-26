@@ -32,6 +32,7 @@ button.link{background:none;border:0;color:var(--mute);min-height:36px;text-deco
 .steps{display:flex;gap:6px}.step{flex:1 1 0}.step.on{flex:1.5 1 0}
 .step{display:flex;align-items:center;gap:6px;padding:8px 9px;border-radius:12px;background:var(--panel);border:1px solid transparent;font:600 12.5px Inter;color:var(--mute);white-space:nowrap}
 .step .nm{overflow:hidden;text-overflow:ellipsis}
+@media (max-width:480px){.step:not(.on) .nm{display:none}.step:not(.on){flex:0 1 auto}.step:not(.on) .st:not(:empty){margin-left:4px}}
 .step .st{margin-left:auto;font:700 13px Rubik}
 .step.on{color:var(--ink);border-color:var(--sg);background:color-mix(in srgb,var(--sg) 16%,transparent)}
 .step.ok .st{color:var(--ok)}.step.fail .st{color:var(--coral)}
@@ -198,10 +199,21 @@ const KEY='irishguessr';
 const store={get(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return{}}},set(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/&/g,'and').trim().replace(/^the\s+/,'').replace(/[^a-z0-9]/g,'');
-function lev(a,b){const m=a.length,n=b.length;let p=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+// Edit distance that also counts swapped neighbouring letters as one typo
+function lev(a,b){const m=a.length,n=b.length,d=[];for(let i=0;i<=m;i++){d[i]=[i];for(let j=1;j<=n;j++)d[i][j]=i?Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1),i>1&&j>1&&a[i-1]===b[j-2]&&a[i-2]===b[j-1]?d[i-2][j-2]+1:99):j}return d[m][n]}
+// Forgiving matching: ignores case, fadas, punctuation, spacing, filler words ("the", "of", "county"…),
+// optional place words ("river", "lough", "island"…), word order and doubled letters, then allows typos.
+const FILLER=/\b(the|a|an|and|of|co|county|saint|st)\b/g,PLACE=/\b(river|lough|lake|loch|island|isle|islands|mountain|mount|mt|cliff|cliffs|bay|head)\b/g;
+function keys(str){
+  const s=String(str).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/&/g,' and ').replace(/['’`]/g,'').replace(/[^a-z0-9]+/g,' ').replace(FILLER,' ');
+  const out=new Set();
+  for(const v of [s,s.replace(PLACE,' ')]){const w=v.split(' ').filter(Boolean);if(!w.length)continue;out.add(w.join(''));out.add([...w].sort().join(''))}
+  return [...out].map(k=>k.replace(/(.)\1+/g,'$1'));
+}
+const tolFor=n=>n<=3?0:n<=6?1:n<=10?2:3;
 function matches(guess,q){
-  const g=norm(guess);if(!g)return false;
-  return [q.a,...q.alt].some(x=>{const t=norm(x);if(g===t)return true;const tol=t.length>=8?2:t.length>=5?1:0;return tol>0&&lev(g,t)<=tol});
+  const gs=keys(guess);if(!gs.length)return false;
+  return [q.a,...q.alt].some((x,i)=>keys(x).some(t=>gs.some(g=>g===t||(i===0&&t.length>=5&&g.includes(t)&&g.length<=t.length+12)||lev(g,t)<=tolFor(t.length))));
 }
 const pattern=a=>a.split(' ').map(w=>[...w].map((c,i)=>i===0||!/\p{L}/u.test(c)?c:'_').join('')).join('   ');
 const pts=w=>w.status==='ok'?POINTS[w.hints-1]:0;
