@@ -6,14 +6,18 @@ Daily Irish trivia guessing game. Single static page (`index.html`) hosted on Gi
 - Everyone gets the same 3 answers per day, one from each genre, always in this order: Music, Geography, Sport.
 - Every answer is something Irish.
 - Each answer has 5 hints, from vaguest to most obvious. Hint 1 is shown at the start.
+- Hint cards are colour-coded by `HEAT`: hint 1 green → lime → yellow → orange → hint 5 red, so players can see hints running out. The points meter uses the same colours.
 - Hint 5 also shows a letter pattern (first letter of each word, the rest as underscores).
-- Unlimited guesses. Wrong guesses are free and don't reveal anything.
+- Unlimited guesses. Each wrong guess costs 5 points and reveals nothing. Repeating a guess already tried is ignored (no cost).
 - Every guess is listed as a coloured chip: red = wrong, amber = close (shares a real word with an answer, or is within a couple of typos of matching), green = correct (`closeness()`).
 - Players tap "Next hint" only when they want one. On hint 5 that button becomes "Give up", which ends the answer with 0 points.
 - One attempt per day. Progress is saved after every step, so refreshing doesn't reset a puzzle.
 
 ## Scoring
 - `POINTS=[100,80,60,40,20]`: points for solving on hint 1–5. 300 max per day.
+- `WRONG_PTS=5`: taken off for each wrong guess (close guesses count as wrong).
+- `MIN_SOLVED=5`: a solved answer never scores below 5. Missing or giving up scores 0.
+- The share grid adds `✕N` after a row when there were N wrong guesses.
 
 ## Answer matching (deliberately forgiving)
 - Ignores case, fadas, punctuation, apostrophes, spacing and word order.

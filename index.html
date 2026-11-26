@@ -43,16 +43,17 @@ button.link{background:none;border:0;color:var(--mute);min-height:36px;text-deco
 .genre{display:inline-flex;align-items:center;gap:8px;font:700 13px Rubik,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--g)}
 .genre i{font-style:normal;font-size:20px;width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:color-mix(in srgb,var(--g) 20%,transparent)}
 .worth{text-align:right}.worth b{font:800 26px/1 Rubik,sans-serif;color:var(--gold);font-variant-numeric:tabular-nums}.worth b small{font-size:14px;margin-left:2px}
-.meter{display:flex;gap:4px;margin-top:6px;justify-content:flex-end}.meter span{width:16px;height:5px;border-radius:3px;background:rgba(255,255,255,.15)}.meter span.on{background:var(--gold)}
+.meter{display:flex;gap:4px;margin-top:6px;justify-content:flex-end}.meter span{width:16px;height:5px;border-radius:3px;background:rgba(255,255,255,.15)}.meter span.on{background:var(--h)}
 .hints{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.hint{border-radius:14px;padding:11px 14px;display:flex;gap:12px;align-items:baseline;background:var(--cream);color:var(--creamInk);box-shadow:0 2px 0 #d8caa6,0 6px 14px rgba(0,0,0,.18)}
-.hint.old{background:#e9e1cb;padding:9px 14px;box-shadow:0 2px 0 #cbbd98}.hint.old p{font-size:15px}
-.hint.latest{box-shadow:0 3px 0 #d8caa6,0 0 0 2px var(--g),0 10px 22px rgba(0,0,0,.28)}
+.hint{border-radius:14px;padding:11px 14px;display:flex;gap:12px;align-items:baseline;background:color-mix(in srgb,var(--h) 16%,var(--cream));color:var(--creamInk);border-left:6px solid var(--h);box-shadow:0 2px 0 color-mix(in srgb,var(--h) 45%,#d8caa6),0 6px 14px rgba(0,0,0,.18)}
+.hint.old{background:color-mix(in srgb,var(--h) 14%,#e9e1cb);padding:9px 14px}.hint.old p{font-size:15px}
+.hint.latest{box-shadow:0 3px 0 #d8caa6,0 0 0 2px var(--h),0 10px 22px rgba(0,0,0,.28)}
 .hint.new{animation:deal .4s cubic-bezier(.2,.9,.3,1.2) both}
-.hint b{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:800 12px Rubik;background:color-mix(in srgb,var(--g) 30%,#fff);color:var(--creamInk)}
+.hint b{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:800 12px Rubik;background:var(--h);color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 .hint p{margin:0;font:500 clamp(16px,4.4vw,18px)/1.4 Inter,sans-serif}
 .pattern{display:block;margin-top:6px;font:700 18px/1.2 ui-monospace,monospace;letter-spacing:.18em}
 @keyframes deal{from{opacity:0;transform:translateY(-12px) rotate(-1.5deg) scale(.97)}}
+.unlock:hover{border-color:var(--h)!important}.unlock .lk{box-shadow:0 0 0 2px var(--h)}
 .unlock{width:100%;display:flex;align-items:center;gap:12px;justify-content:flex-start;background:rgba(0,0,0,.16);border:1.5px dashed rgba(255,255,255,.28);border-radius:14px;padding:10px 14px;color:var(--ink);text-align:left}
 .unlock:hover{background:rgba(0,0,0,.24);border-color:var(--g)}
 .unlock .lk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:rgba(255,255,255,.12)}
@@ -146,6 +147,8 @@ pre{background:rgba(0,0,0,.25);border-radius:14px;padding:12px 14px;margin:0;fon
 {
 // ---- Settings ----
 const POINTS=[100,80,60,40,20];           // points if solved on hint 1..5
+const HEAT=['#4cc96a','#a6d84a','#f4c430','#f7903a','#ef5048']; // hint 1..5: green → red as hints run out
+const WRONG_PTS=5,MIN_SOLVED=5;          // each wrong guess costs 5; a solved answer always keeps at least 5
 const GENRES=[
   {key:'music',name:'Music',icon:'🎵',col:'var(--music)'},
   {key:'geo',name:'Geography',icon:'🗺️',col:'var(--geo)'},
@@ -233,7 +236,8 @@ function closeness(guess,q){
   return [q.a,...q.alt].some(x=>words(x).some(w=>gw.has(w))||keys(x).some(t=>gs.some(g=>lev(g,t)<=tolFor(t.length)+2)))?'close':'miss';
 }
 const pattern=a=>a.split(' ').map(w=>[...w].map((c,i)=>i===0||!/\p{L}/u.test(c)?c:'_').join('')).join('   ');
-const pts=w=>w.status==='ok'?POINTS[w.hints-1]:0;
+const worth=w=>Math.max(MIN_SOLVED,POINTS[w.hints-1]-WRONG_PTS*w.misses.length);
+const pts=w=>w.status==='ok'?worth(w):0;
 
 // ---- State ----
 let S=null,tick=null;
@@ -254,20 +258,20 @@ function render(){
   if(tick){clearInterval(tick);tick=null}
   if(S.phase==='intro')return renderIntro();
   if(S.phase==='done')return renderDone();
-  const w=cur(),g=GENRES[S.idx],ended=w.status!=='todo',showN=ended?5:w.hints,val=ended?pts(w):POINTS[w.hints-1];
-  const hintLi=(t,i)=>`<li class="hint ${i===showN-1&&!ended?'latest':'old'} ${i===S.fresh?'new':''}"><b>${i+1}</b><p>${esc(t)}${i===4?`<span class="pattern" aria-label="Letter pattern">${esc(pattern(w.q.a))}</span>`:''}</p></li>`;
+  const w=cur(),g=GENRES[S.idx],ended=w.status!=='todo',showN=ended?5:w.hints,val=ended?pts(w):worth(w);
+  const hintLi=(t,i)=>`<li style="--h:${HEAT[i]}" class="hint ${i===showN-1&&!ended?'latest':'old'} ${i===S.fresh?'new':''}"><b>${i+1}</b><p>${esc(t)}${i===4?`<span class="pattern" aria-label="Letter pattern">${esc(pattern(w.q.a))}</span>`:''}</p></li>`;
   app.innerHTML=`${steps()}
   <section class="card" style="--g:${g.col}">
    <div class="top"><div class="genre"><i>${g.icon}</i>${g.name}</div>
-    <div class="worth"><b>${val}<small>pts</small></b><div class="meter" aria-hidden="true">${POINTS.map((_,i)=>`<span class="${!ended&&i>=w.hints-1||ended&&w.status==='ok'&&i>=w.hints-1?'on':''}"></span>`).join('')}</div></div></div>
+    <div class="worth"><b id="val">${val}<small>pts</small></b><div class="meter" aria-hidden="true">${POINTS.map((_,i)=>`<span style="--h:${HEAT[i]}" class="${!ended&&i>=w.hints-1||ended&&w.status==='ok'&&i>=w.hints-1?'on':''}"></span>`).join('')}</div></div></div>
    <ol class="hints" aria-live="polite">${w.q.h.slice(0,showN).map(hintLi).join('')}</ol>
    ${ended?`${w.misses.length||w.hit?`<ul class="misses" aria-label="Your guesses">${guessChips(w)}</ul>`:''}
      <div class="result reveal ${w.status}">${w.status==='ok'?confetti():''}<div><small>${w.status==='ok'?'✓ Got it on hint '+w.hints:'The answer was'}</small><div class="ans">${esc(w.q.a)}</div><div class="gain">+${pts(w)} pts</div>${w.q.p?`<div class="where">📍 ${esc(w.q.p[2])}</div>`:''}</div>${w.q.p?mapSvg([[w.q.p[0],w.q.p[1],g.col]],'Map showing '+w.q.p[2]):''}</div>
      <button class="primary" id="go">${S.idx<2?'Next: '+GENRES[S.idx+1].icon+' '+GENRES[S.idx+1].name+' →':'See my score →'}</button>`:
     `<form class="guess" id="f" autocomplete="off"><label class="sr" for="g">Your answer</label><input id="g" placeholder="Type your answer…" enterkeyhint="go" autocapitalize="words" autocomplete="off" autocorrect="off" spellcheck="false"><button class="primary" type="submit">Guess</button></form>
      <ul class="misses" id="misses" aria-label="Your guesses">${guessChips(w)}</ul>
-     <p class="msg" id="msg" role="status">${esc(S.msg)||'Guesses are free. Only hints cost points.'}</p>
-     ${w.hints<5?`<button class="unlock" id="hint"><span class="lk">🔒</span>Reveal hint ${w.hints+1}<span class="cost">−20 pts</span></button>
+     <p class="msg" id="msg" role="status">${esc(S.msg)||`Wrong guesses cost ${WRONG_PTS} pts. Hints cost 20.`}</p>
+     ${w.hints<5?`<button class="unlock" id="hint" style="--h:${HEAT[w.hints]}"><span class="lk">🔒</span>Reveal hint ${w.hints+1}<span class="cost">−20 pts</span></button>
        ${w.hints<4?`<p class="locked">${w.hints===3?'Hint 5 is':`Hints ${w.hints+2}–5 are`} locked after that</p>`:''}`:
       `<button class="link" id="give">Give up (0 pts)</button>`}
      ${w.misses.length?`<p class="legend"><span style="--c:var(--coral)">Wrong</span><span style="--c:var(--amber)">Close</span><span style="--c:var(--ok)">Right</span></p>`:''}`}
@@ -290,7 +294,8 @@ function guess(inp){
   if(w.misses.some(m=>norm(m)===norm(v))){msg.textContent='You already tried that.';inp.select();return}
   w.misses.push(v);save();
   const c=closeness(v,w.q);
-  S.msg=c==='close'?'So close! Check the spelling, or part of it is right.':'Not quite. Keep guessing, or reveal a hint.';
+  S.msg=(c==='close'?'So close! Check the spelling, or part of it is right.':'Not quite.')+` −${WRONG_PTS} pts.`;
+  const vb=document.getElementById('val');if(vb)vb.innerHTML=worth(w)+'<small>pts</small>';
   // Update in place (no re-render) so the phone keyboard stays open
   S.popLast=true;document.getElementById('misses').innerHTML=guessChips(w);S.popLast=false;
   msg.textContent=S.msg;inp.value='';
@@ -308,7 +313,7 @@ function renderIntro(){
    <div class="tiles">${GENRES.map(g=>`<div style="--g:${g.col}"><span>${g.icon}</span>${g.name}</div>`).join('')}</div>
    <ul class="rules">
     <li><span>Every day there's one answer from <b>music</b>, <b>geography</b> and <b>sport</b>. Everyone gets the same three.</span></li>
-    <li><span>You start with one vague hint. <b>Guess as often as you like</b>. Wrong guesses are free.</span></li>
+    <li><span>You start with one vague hint. Guess as often as you like, but <b>each wrong guess costs ${WRONG_PTS} points</b>.</span></li>
     <li><span>Reveal more hints when you're stuck. Each one lowers what that answer is worth:</span></li></ul>
    <div class="ladder">${POINTS.map((p,i)=>`<span>${p}<small>hint ${i+1}</small></span>`).join('')}</div>
    <p style="color:var(--mute);font-size:14px">Spelling doesn't have to be perfect, and fadas are optional. Best score is <b style="color:var(--ink)">300</b>.</p>
@@ -320,14 +325,14 @@ function renderDone(){
   const total=S.words.reduce((a,w)=>a+pts(w),0);
   const days=store.get().days||{};const res={};for(const k in days)if(days[k].phase==='done')res[k]=days[k];
   const all=Object.values(res).map(d=>d.words.reduce((a,w)=>a+pts(w),0));
-  const row=w=>w.status==='ok'?'🟨'.repeat(w.hints-1)+'🟩'+'⬜'.repeat(5-w.hints):'🟥'.repeat(5);
+  const row=w=>(w.status==='ok'?'🟨'.repeat(w.hints-1)+'🟩'+'⬜'.repeat(5-w.hints):'🟥'.repeat(5))+(w.misses.length?' ✕'+w.misses.length:'');
   const share=`IrishGuessr #${S.day} · ${total}/300\n`+S.words.map((w,i)=>`${GENRES[i].icon} ${row(w)}`).join('\n');
   const verdict=total>=260?'Sláinte! Outstanding.':total>=200?'Maith thú! Great round.':total>=120?'Not bad at all.':'Tomorrow\'s another day.';
   app.innerHTML=`<section class="panel">
    <p style="color:var(--mute);text-align:center">Puzzle #${S.day} · ${esc(verdict)}</p>
    <div class="big">${total}<small> / 300</small></div>
    <div class="done-map">${mapSvg(S.words.filter(w=>w.q.p).map(w=>[w.q.p[0],w.q.p[1],GENRES[S.words.indexOf(w)].col]),'Map of today\'s answers')}</div>
-   <div class="rows">${S.words.map((w,i)=>`<div class="row" style="--g:${GENRES[i].col}"><i>${GENRES[i].icon}</i><div class="nm">${esc(w.q.a)}<small>${w.status==='ok'?'Got it on hint '+w.hints:'Missed'}${w.misses.length?' · '+w.misses.length+' wrong guess'+(w.misses.length>1?'es':''):''}</small><div class="bar"><span style="width:${pts(w)}%"></span></div></div><b>${pts(w)}</b></div>`).join('')}</div>
+   <div class="rows">${S.words.map((w,i)=>`<div class="row" style="--g:${GENRES[i].col}"><i>${GENRES[i].icon}</i><div class="nm">${esc(w.q.a)}<small>${w.status==='ok'?'Got it on hint '+w.hints:'Missed'}${w.misses.length?' · '+w.misses.length+' wrong guess'+(w.misses.length>1?'es':'')+' (−'+WRONG_PTS*w.misses.length+')':''}</small><div class="bar"><span style="width:${pts(w)}%"></span></div></div><b>${pts(w)}</b></div>`).join('')}</div>
    <div class="stats"><div><strong>${all.length}</strong><span>Played</span></div><div><strong>${streak(res)}</strong><span>Streak</span></div><div><strong>${all.length?Math.max(...all):'–'}</strong><span>Best</span></div></div>
    <pre>${esc(share)}</pre>
    <button class="primary" id="copy">Copy result</button>
